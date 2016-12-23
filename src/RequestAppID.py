@@ -1,6 +1,7 @@
 import requests
 import sys
 import getopt
+import json
 
 try:
     opts, args = getopt.getopt(sys.argv[1:],'hk:',['help', 'key='])
@@ -18,11 +19,14 @@ for opt, arg in opts:
     elif opt in ('-k', '--key'):
         key = arg
 
-with open('../input/steam_user_id.txt') as f:
-	user_ids = f.readlines()
+with open('../input/steam_user_id.txt', 'r') as f:
+	user_ids = f.read().splitlines()
 
-for user_id in user_ids:
+appid = dict()
+for user_id in user_ids[:5]:
 	url = 'http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key='+key+'&steamid='+user_id+'&format=json'
-	#r = requests.get(url, params)
-	print url
+	response = requests.get(url).json()
+	appid[user_id]=response.get('response').get('games')
 
+with open('../input/user_inventory.txt', 'w') as f:
+    json.dump(appid, f)

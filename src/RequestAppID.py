@@ -22,11 +22,10 @@ for opt, arg in opts:
 with open('../input/steam_user_id.txt', 'r') as f:
 	user_ids = f.read().splitlines()
 
-appid = dict()
-for user_id in user_ids[:5]:
-	url = 'http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key='+key+'&steamid='+user_id+'&format=json'
-	response = requests.get(url).json()
-	appid[user_id]=response.get('response').get('games')
-
 with open('../input/user_inventory.txt', 'w') as f:
-    json.dump(appid, f)
+    for user_id in user_ids:
+        url = 'http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key='+key+'&steamid='+user_id+'&format=json'
+        response = requests.get(url).json()
+        json.dump({user_id:response.get('response').get('games')}, f)
+        f.write('\n')
+

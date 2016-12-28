@@ -46,7 +46,7 @@ if __name__ == '__main__':
     try:
         opts, args = getopt.getopt(sys.argv[1:],'hk:n:',['help', 'key=', 'nfolds='])
     except getopt.GetoptError:
-        print 'python ./RequestAppID -k <key>'
+        print 'python ./RequestAppID -k <key> -n <nfolds>'
         print '-h, --help:          print this help and exit'
         print '-k, --key:           steam web api key'
         print '-n, --nfolds:        number of threads'

@@ -1,11 +1,24 @@
 import sys, getopt
 import numpy as np
 import pandas as pd
-import json
+import json, re
+from datetime import datetime
 from pandas.io.json import json_normalize
 import sqlalchemy
 from sqlalchemy_utils import database_exists, create_database
 import pymysql
+
+def dateConvert(date):
+    try:
+        if re.search(',', date) == None:
+            return datetime.strptime(date, '%b %Y')
+        elif date[0].isalpha():
+            return datetime.strptime(date, '%b %d, %Y')
+        else:
+            return datetime.strptime(date, '%d %b, %Y')
+    except (ValueError, TypeError) as e:
+        print e, date
+        return pd.NaT
 
 try:
 	opts, args = getopt.getopt(sys.argv[1:],'hu:p:',['help', 'user=', 'password='])
@@ -42,24 +55,32 @@ df = json_normalize(apps.values())
 df['steam_appid'] = apps.keys()
 df['name'] = df['data.name']
 df['type'] = df['data.type']
+
 # currency: 'USD', 'PHP'; all change to USD
 df['initial_price'] = df.apply(lambda x: x['data.price_overview.initial']*0.02 if x['data.price_overview.currency'] == 'PHP' else x['data.price_overview.initial'], axis = 1)
-df['release_date'] = df['data.release_date.date']
+df['initial_price'] = df['initial_price'] / 100.0
+df['initial_price'] = df.apply(lambda x: 0 if x['data.is_free']==True else x['initial_price'], axis = 1)
+# set initial_price as 0 when data.is_free = True
+#df[pd.notnull(df[['data.is_free']]).any(axis = 1)][['data.is_free','initial_price']]
+#df.loc[df['data.is_free'],['initial_price']] = 0
+
+df['release_date'] = df['data.release_date.date'].map(lambda x: dateConvert(x))
 df['score'] = df['data.metacritic.score']
 df['recommendation'] = df['data.recommendations.total']
-df['windows'] = df['data.platforms.windows']
-df['mac'] = df['data.platforms.mac']
-df['linux'] = df['data.platforms.linux']
+df['windows'] = df['data.platforms.windows'].map(lambda x: 1 if x else 0)
+df['mac'] = df['data.platforms.mac'].map(lambda x: 1 if x else 0)
+df['linux'] = df['data.platforms.linux'].map(lambda x: 1 if x else 0)
 df['header_image'] = df['data.header_image']
 
 # Remove invalid steam_appid with no product information
 df = df[pd.notnull(df['name'])]
-# set initial_price as 0 when data.is_free = True
-#df[pd.notnull(df[['data.is_free']]).any(axis = 1)][['data.is_free','initial_price']]
-df.loc[df['data.is_free'],['initial_price']] = 0
 
 df = df[['steam_appid','name','type','initial_price','release_date','score','recommendation','windows','mac','linux','header_image']]
+df.to_csv('../input/steam_app_info.csv', encoding='utf8', index = False)
 
+#####################
+### save to MySQL ###
+#####################
 engine = sqlalchemy.create_engine('mysql+pymysql://'+sql_user+':'+sql_pwd+'@127.0.0.1/game_recommendation?charset=utf8mb4')
 if not database_exists(engine.url):
     create_database(engine.url)

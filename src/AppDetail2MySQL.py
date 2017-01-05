@@ -53,6 +53,7 @@ for app_detail in app_details:
 df = json_normalize(apps.values())
 
 df['steam_appid'] = apps.keys()
+df['steam_appid'] = df['steam_appid'].astype(int)
 df['name'] = df['data.name']
 df['type'] = df['data.type']
 
@@ -75,7 +76,7 @@ df['header_image'] = df['data.header_image']
 # Remove invalid steam_appid with no product information
 df = df[pd.notnull(df['name'])]
 
-df = df[['steam_appid','name','type','initial_price','release_date','score','recommendation','windows','mac','linux','header_image']]
+df = df[['steam_appid','name','type','initial_price','release_date','score','recommendation','windows','mac','linux','header_image']].sort(['steam_appid'])
 df.to_csv('../input/steam_app_info.csv', encoding='utf8', index = False)
 
 #####################

@@ -10,7 +10,7 @@ import pymysql
 try:
 	opts, args = getopt.getopt(sys.argv[1:],'hu:p:',['help', 'user=', 'password='])
 except getopt.GetoptError:
-    print 'python ./AppDetail2MySQL -u <MySQL user_id> -p <MySQL password>'
+    print 'python ./AppDetail2MySQL_v2.py -u <MySQL user_id> -p <MySQL password>'
     print '-h, --help:          print this help and exit'
     print '-u, --user:          MySQL user id'
     print '-p, --password:      MySQL password'
@@ -18,7 +18,7 @@ except getopt.GetoptError:
 
 for opt, arg in opts:
     if opt in ('-h', '--help'):
-    	print 'python ./AppDetail2MySQL -u <MySQL user_id> -p <MySQL password>'
+    	print 'python ./AppDetail2MySQL_v2.py -u <MySQL user_id> -p <MySQL password>'
         print '-h, --help:          print this help and exit'
         print '-u, --user:          MySQL user id'
         print '-p, --password:      MySQL password'
@@ -29,7 +29,7 @@ for opt, arg in opts:
         sql_pwd = arg
 
 # set file path
-path_app_info = '../input/steam_app_info.csv'
+path_app_info = '../output/steam_app_info.csv'
 path_app_detail = '../input/app_detail.txt'
 
 if not os.path.exists(path_app_info):

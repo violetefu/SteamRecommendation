@@ -8,22 +8,10 @@ import sqlalchemy
 from sqlalchemy_utils import database_exists, create_database
 import pymysql
 
-def dateConvert(date):
-    try:
-        if re.search(',', date) == None:
-            return datetime.strptime(date, '%b %Y')
-        elif date[0].isalpha():
-            return datetime.strptime(date, '%b %d, %Y')
-        else:
-            return datetime.strptime(date, '%d %b, %Y')
-    except (ValueError, TypeError) as e:
-        print e, date
-        return pd.NaT
-
 try:
 	opts, args = getopt.getopt(sys.argv[1:],'hu:p:',['help', 'user=', 'password='])
 except getopt.GetoptError:
-    print 'python ./AppDetail2MySQL -u <MySQL user_id> -p <MySQL password>'
+    print 'python ./AppDetail2MySQL.py -u <MySQL user_id> -p <MySQL password>'
     print '-h, --help:          print this help and exit'
     print '-u, --user:          MySQL user id'
     print '-p, --password:      MySQL password'
@@ -31,7 +19,7 @@ except getopt.GetoptError:
 
 for opt, arg in opts:
     if opt in ('-h', '--help'):
-    	print 'python ./AppDetail2MySQL -u <MySQL user_id> -p <MySQL password>'
+    	print 'python ./AppDetail2MySQL.py -u <MySQL user_id> -p <MySQL password>'
         print '-h, --help:          print this help and exit'
         print '-u, --user:          MySQL user id'
         print '-p, --password:      MySQL password'
@@ -65,6 +53,18 @@ df['initial_price'] = df.apply(lambda x: 0 if x['data.is_free']==True else x['in
 #df[pd.notnull(df[['data.is_free']]).any(axis = 1)][['data.is_free','initial_price']]
 #df.loc[df['data.is_free'],['initial_price']] = 0
 
+def dateConvert(date):
+    try:
+        if re.search(',', date) == None:
+            return datetime.strptime(date, '%b %Y')
+        elif date[0].isalpha():
+            return datetime.strptime(date, '%b %d, %Y')
+        else:
+            return datetime.strptime(date, '%d %b, %Y')
+    except (ValueError, TypeError) as e:
+        print e, date
+        return pd.NaT
+
 df['release_date'] = df['data.release_date.date'].map(lambda x: dateConvert(x))
 df['score'] = df['data.metacritic.score']
 df['recommendation'] = df['data.recommendations.total']
@@ -77,7 +77,7 @@ df['header_image'] = df['data.header_image']
 df = df[pd.notnull(df['name'])]
 
 df = df[['steam_appid','name','type','initial_price','release_date','score','recommendation','windows','mac','linux','header_image']].sort(['steam_appid'])
-df.to_csv('../input/steam_app_info.csv', encoding='utf8', index = False)
+df.to_csv('../output/steam_app_info.csv', encoding='utf8', index = False)
 
 #####################
 ### save to MySQL ###
